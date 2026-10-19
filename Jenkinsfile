@@ -39,7 +39,7 @@ pipeline {
                             sh '''
                                 set +x
                                 export SONAR_SCANNER_JAVA_OPTS="-Xmx512m"
-                                mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar                                   -Dsonar.projectKey=devops-gestion-projets                                   -Dsonar.host.url="$SONAR_HOST_URL"                                   -Dsonar.scanner.skipJreProvisioning=true
+                                mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar                                   -Dsonar.projectKey=devops-gestion-projets                                   -Dsonar.host.url="$SONAR_HOST_URL"                                   -Dsonar.scanner.skipJreProvisioning=true -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
                             '''
                         }
                     }
