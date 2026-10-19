@@ -28,6 +28,25 @@ pipeline {
             }
         }
 
+        stage('Analyser avec SonarQube') {
+            steps {
+                dir('backend') {
+                    withSonarQubeEnv('SonarQube') {
+                        withCredentials([string(
+                            credentialsId: 'sonarqube-token',
+                            variable: 'SONAR_TOKEN'
+                        )]) {
+                            sh '''
+                                set +x
+                                export SONAR_SCANNER_JAVA_OPTS="-Xmx512m"
+                                mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar                                   -Dsonar.projectKey=devops-gestion-projets                                   -Dsonar.host.url="$SONAR_HOST_URL"                                   -Dsonar.scanner.skipJreProvisioning=true
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Construire Angular') {
             steps {
                 dir('frontend') {
