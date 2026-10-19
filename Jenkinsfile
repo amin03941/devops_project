@@ -54,6 +54,36 @@ pipeline {
                 sh 'docker build -t gestion-frontend:ci-$BUILD_NUMBER frontend'
             }
         }
+
+        stage('Publier sur Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_TOKEN'
+                )]) {
+                    sh '''
+                        set +x
+                        set -eu
+                        export DOCKER_CONFIG="$(mktemp -d)"
+                        trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+
+                        printf '%s' "$DOCKER_TOKEN" | docker login                           --username "$DOCKER_USER" --password-stdin
+
+                        for component in backend frontend; do
+                            source="gestion-${component}:ci-${BUILD_NUMBER}"
+                            target="mohamedaminkharrat/gestion-${component}"
+
+                            docker tag "$source" "$target:ci-${BUILD_NUMBER}"
+                            docker tag "$source" "$target:latest"
+
+                            docker push "$target:ci-${BUILD_NUMBER}"
+                            docker push "$target:latest"
+                        done
+                    '''
+                }
+            }
+        }
     }
 
     post {
