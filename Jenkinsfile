@@ -23,7 +23,7 @@ pipeline {
         stage('Construire Spring') {
             steps {
                 dir('backend') {
-                    sh 'mvn -B -DskipTests clean package'
+                    sh 'mvn -B -DargLine="-Xmx384m" clean package'
                 }
             }
         }
@@ -87,6 +87,10 @@ pipeline {
     }
 
     post {
+        always {
+            junit testResults: 'backend/target/surefire-reports/TEST-*.xml',
+                  allowEmptyResults: false
+        }
         success {
             archiveArtifacts artifacts: 'backend/target/*.jar',
                              fingerprint: true
