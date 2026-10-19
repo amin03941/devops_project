@@ -1,0 +1,10 @@
+
+# Fichiers générés et configuration locale
+**/node_modules/
+**/dist/
+**/target/
+**/.angular/
+.env
+.env.*
+!.env.example
+mysql.env

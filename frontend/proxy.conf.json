@@ -1,0 +1,14 @@
+{
+  "/entreprise/**": {
+    "target": "http://127.0.0.1:8081"
+  },
+  "/equipe/**": {
+    "target": "http://127.0.0.1:8081"
+  },
+  "/projet/**": {
+    "target": "http://127.0.0.1:8081"
+  },
+  "/projet-detaille/**": {
+    "target": "http://127.0.0.1:8081"
+  }
+}
