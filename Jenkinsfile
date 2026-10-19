@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 40, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+
+    environment {
+        MAVEN_OPTS = '-Xmx512m'
+    }
+
+    stages {
+        stage('Verifier les outils') {
+            steps {
+                sh 'java -version'
+                sh 'mvn -version'
+                sh 'docker version'
+            }
+        }
+
+        stage('Construire Spring') {
+            steps {
+                dir('backend') {
+                    sh 'mvn -B -DskipTests clean package'
+                }
+            }
+        }
+
+        stage('Construire Angular') {
+            steps {
+                dir('frontend') {
+                    sh '''
+                        docker run --rm \
+                          --user "$(id -u):$(id -g)" \
+                          -e HOME=/tmp \
+                          -e CI=true \
+                          -e NG_CLI_ANALYTICS=false \
+                          -e NG_BUILD_MAX_WORKERS=2 \
+                          -e NODE_OPTIONS=--max-old-space-size=1024 \
+                          -v "$PWD:/app" \
+                          -w /app \
+                          node:24-bookworm-slim \
+                          sh -c 'npm ci --maxsockets=3 --fetch-retries=5 --fetch-timeout=600000 --no-audit --no-fund && npm run build -- --output-path=dist/frontend'
+                    '''
+                }
+            }
+        }
+
+        stage('Construire les images Docker') {
+            steps {
+                sh 'docker build -t gestion-backend:ci-$BUILD_NUMBER backend'
+                sh 'docker build -t gestion-frontend:ci-$BUILD_NUMBER frontend'
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'backend/target/*.jar',
+                             fingerprint: true
+        }
+    }
+}
