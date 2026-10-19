@@ -12,6 +12,12 @@ pipeline {
     }
 
     stages {
+        stage('Preparer SonarQube') {
+            steps {
+                sh 'sh ci/prepare-analysis.sh'
+            }
+        }
+
         stage('Verifier les outils') {
             steps {
                 sh 'java -version'
@@ -103,6 +109,12 @@ pipeline {
                 }
             }
         }
+        stage('Deployer sur Kubernetes') {
+            steps {
+                sh 'sh ci/deploy.sh'
+            }
+        }
+
     }
 
     post {
